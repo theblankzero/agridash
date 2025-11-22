@@ -122,7 +122,12 @@ from email.mime.multipart import MIMEMultipart
 import re
 from datetime import datetime
 import numpy as np
-import tensorflow as tf
+try:
+    import tensorflow as tf
+    TF_AVAILABLE = True
+except ImportError:
+    TF_AVAILABLE = False
+    print("TensorFlow not available. ML features will be disabled.")
 
 # --- Flask App Initialization ---
 app = Flask(__name__)
@@ -135,7 +140,8 @@ app.config['MAIL_PASSWORD'] = 'your-app-password'
 app.config['MAIL_DEFAULT_SENDER'] = 'your-email@gmail.com'
 
 # --- ML Model Loading ---
-MODEL_PATH = "model.h5"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "model.h5")
 model = None
 ml_model_available = False
 
@@ -238,7 +244,8 @@ EXPECTED_MODEL_INPUT_FEATURES = 10
 # --- Database Functions ---
 def init_db():
     """Initialize SQLite database with users table if it doesn't exist."""
-    conn = sqlite3.connect('agridash.db')
+    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'agridash.db')
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
@@ -288,7 +295,8 @@ def init_db():
 
 def get_db_connection():
     """Get a connection to the SQLite database."""
-    conn = sqlite3.connect('agridash.db')
+    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'agridash.db')
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
 
